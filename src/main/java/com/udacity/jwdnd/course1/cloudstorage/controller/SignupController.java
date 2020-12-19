@@ -6,10 +6,13 @@ import com.udacity.jwdnd.course1.cloudstorage.services.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Optional;
 /*
@@ -33,9 +36,9 @@ public class SignupController {
     }
 
     @PostMapping
-    public String signupNewUser(@ModelAttribute("signupForm") final SignupFormDTO signupForm, final Model model) {
+    public ModelAndView signupNewUser(@ModelAttribute("signupForm") final SignupFormDTO signupForm, final ModelMap model) {
 
-        Optional<String> invalidResult = this.isSubmittedSignupDataValid(signupForm);
+        Optional<String> invalidResult = this.  isSubmittedSignupDataValid(signupForm);
 
         if (invalidResult.isPresent()) {
             model.addAttribute("signupError", invalidResult.get());
@@ -44,14 +47,16 @@ public class SignupController {
 
             Optional<User> user = userService.createUser(signupForm.getUserName(), signupForm.getPassword(), signupForm.getFirstName(), signupForm.getLastName());
 
-            if (user.isPresent()) {
-                model.addAttribute("signupWithSuccess", true);
-            } else {
+            if (!user.isPresent()) {
+
                 model.addAttribute("signupError", "There was an error signing you up. Please try again.");
+                return new ModelAndView("signup", model);
+            } else {
+                model.addAttribute("signup", "true");
             }
         }
 
-        return "signup";
+        return new ModelAndView("login", model);
     }
 
     private Optional<String> isSubmittedSignupDataValid(final SignupFormDTO signupForm) {
